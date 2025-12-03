@@ -72,10 +72,13 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Windows\ClaimsListPage.xaml">
+    <Page Include="Pages\ClaimsListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\AppStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\AppStyles_NEW.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\AddEditClaimWindow.xaml">
@@ -84,7 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Claim.cs" />
-    <Compile Include="Windows\ClaimsListPage.xaml.cs">
+    <Compile Include="Pages\ClaimsListPage.xaml.cs">
       <DependentUpon>ClaimsListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
