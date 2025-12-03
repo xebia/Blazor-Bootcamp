@@ -1,0 +1,84 @@
+﻿@page "/counter"
+@rendermode InteractiveAuto
+@implements IDisposable
+
+@inject RenderModeProvider RenderModeProvider
+@inject PersistentComponentState ApplicationState
+
+<PageTitle>Counter MN</PageTitle>
+
+<h1>Counter</h1>
+
+<p class="border border-info">Render mode: 
+    @RenderModeProvider.GetRenderMode(this)</p>
+
+@if (data == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+        <p>@data</p>
+
+        <p role="status">Current count: @currentCount</p>
+
+        <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+}
+
+@code {
+  private int currentCount = 0;
+  private string? data;
+  private PersistingComponentStateSubscription persistingSubscription;
+
+  protected override async Task OnInitializedAsync()
+  {
+    // Try to restore the data from persistent state first
+    var restored = ApplicationState.TryTakeFromJson<string>("data", out var restoredData);
+    if (restored && restoredData != null)
+    {
+        data = restoredData;
+    }
+
+    if (RenderModeProvider.GetRenderMode(this).IsInteractive())
+    {
+        // Pull the 'data' from persistent component state
+        if (!restored || data == null)
+        {
+        await Task.Delay(1000);
+        var interactiveRestored = ApplicationState.TryTakeFromJson<string>("data", out var interactiveData);
+            if (interactiveRestored && interactiveData != null)
+            {
+                data = interactiveData;
+            }
+        }
+    }
+    else  
+    {
+        // Only fetch from database if we don't have restored data
+        if (!restored || data == null)
+        {
+            // go get data from the database!!!!!!
+            data = "Here is the data from the database!";
+        }
+
+        // Register a callback to persist the data when prerendering ends
+        persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
+    }
+  }
+
+  private Task PersistData()
+  {
+      ApplicationState.PersistAsJson("data", data);
+      return Task.CompletedTask;
+  }
+
+  private void IncrementCount()
+  {
+      currentCount++;
+  }
+
+  public void Dispose()
+  {
+      persistingSubscription.Dispose();
+  }
+}
