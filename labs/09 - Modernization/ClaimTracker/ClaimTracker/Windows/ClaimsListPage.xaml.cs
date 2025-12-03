@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using ClaimTracker.Models;
 using ClaimTracker.Windows;
 
-namespace ClaimTracker.Pages
+namespace ClaimTracker.Windows
 {
     /// <summary>
     /// Displays the list of all claims with add, edit, and delete functionality.
