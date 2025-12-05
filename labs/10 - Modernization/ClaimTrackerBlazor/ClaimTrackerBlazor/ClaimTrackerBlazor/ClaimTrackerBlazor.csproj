@@ -8,8 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ClaimTrackerBlazor.Contracts\ClaimTrackerBlazor.Contracts.csproj" />
+    <ProjectReference Include="..\ClaimTrackerBlazor.DataAccess\ClaimTrackerBlazor.DataAccess.csproj" />
     <ProjectReference Include="..\ClaimTrackerBlazor.Client\ClaimTrackerBlazor.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
+    <PackageReference Include="Azure.Identity" Version="1.11.4" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.61.3" />
   </ItemGroup>
 
 </Project>

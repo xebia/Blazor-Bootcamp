@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="ClaimTrackerBlazor/ClaimTrackerBlazor.Contracts/ClaimTrackerBlazor.Contracts.csproj" />
+  <Project Path="ClaimTrackerBlazor/ClaimTrackerBlazor.DataAccess/ClaimTrackerBlazor.DataAccess.csproj" />
   <Project Path="ClaimTrackerBlazor/ClaimTrackerBlazor.Client/ClaimTrackerBlazor.Client.csproj" />
   <Project Path="ClaimTrackerBlazor/ClaimTrackerBlazor/ClaimTrackerBlazor.csproj" />
 </Solution>
