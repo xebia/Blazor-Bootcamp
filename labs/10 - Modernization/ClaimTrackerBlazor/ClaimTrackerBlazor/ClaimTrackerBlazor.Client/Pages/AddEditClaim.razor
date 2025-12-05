@@ -1,0 +1,279 @@
+@page "/claims/add"
+@page "/claims/edit/{ClaimId:int}"
+@rendermode InteractiveAuto
+@inject IClaimsData ClaimsData
+@inject NavigationManager Navigation
+
+<PageTitle>@pageTitle</PageTitle>
+
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">@pageTitle</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-area">
+    @if (isLoading)
+    {
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading claim...</p>
+        </div>
+    }
+    else
+    {
+        <div class="content-surface mx-4">
+            <EditForm Model="@claim" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <!-- Claim Number -->
+                <div class="mb-3">
+                    <label for="claimNumber" class="form-label fw-bold">
+                        Claim Number <span class="text-danger">*</span>
+                    </label>
+                    <InputText id="claimNumber" 
+                              class="form-control" 
+                              @bind-Value="claim.ClaimNumber"
+                              maxlength="50" />
+                    <ValidationMessage For="@(() => claim.ClaimNumber)" />
+                </div>
+
+                <!-- Policy Holder Name -->
+                <div class="mb-3">
+                    <label for="policyHolderName" class="form-label fw-bold">
+                        Policy Holder Name <span class="text-danger">*</span>
+                    </label>
+                    <InputText id="policyHolderName" 
+                              class="form-control" 
+                              @bind-Value="claim.PolicyHolderName"
+                              maxlength="100" />
+                    <ValidationMessage For="@(() => claim.PolicyHolderName)" />
+                </div>
+
+                <!-- Date of Incident -->
+                <div class="mb-3">
+                    <label for="dateOfIncident" class="form-label fw-bold">
+                        Date of Incident <span class="text-danger">*</span>
+                    </label>
+                    <InputDate id="dateOfIncident" 
+                              class="form-control" 
+                              @bind-Value="claim.DateOfIncident" />
+                    <small class="form-text text-muted">Must be a date in the past</small>
+                    <ValidationMessage For="@(() => claim.DateOfIncident)" />
+                    @if (showDateValidationError)
+                    {
+                        <div class="validation-message">Date of Incident must be in the past (not today or future).</div>
+                    }
+                </div>
+
+                <!-- Date Filed -->
+                <div class="mb-3">
+                    <label for="dateFiled" class="form-label fw-bold">
+                        Date Filed <span class="text-danger">*</span>
+                    </label>
+                    <InputDate id="dateFiled" 
+                              class="form-control" 
+                              @bind-Value="claim.DateFiled" />
+                    <ValidationMessage For="@(() => claim.DateFiled)" />
+                </div>
+
+                <!-- Claim Amount -->
+                <div class="mb-3">
+                    <label for="claimAmount" class="form-label fw-bold">
+                        Claim Amount <span class="text-danger">*</span>
+                    </label>
+                    <InputNumber id="claimAmount" 
+                                class="form-control" 
+                                @bind-Value="claim.ClaimAmount"
+                                step="0.01" />
+                    <small class="form-text text-muted">Must be greater than 0</small>
+                    <ValidationMessage For="@(() => claim.ClaimAmount)" />
+                </div>
+
+                <!-- Status -->
+                <div class="mb-3">
+                    <label for="status" class="form-label fw-bold">
+                        Status <span class="text-danger">*</span>
+                    </label>
+                    <InputSelect id="status" 
+                                class="form-control" 
+                                @bind-Value="claim.Status">
+                        <option value="">-- Select Status --</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Denied">Denied</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => claim.Status)" />
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label fw-bold">
+                        Description (Optional)
+                    </label>
+                    <InputTextArea id="description" 
+                                  class="form-control" 
+                                  @bind-Value="claim.Description"
+                                  rows="5"
+                                  maxlength="500" />
+                    <small class="form-text text-muted">Maximum 500 characters</small>
+                    <ValidationMessage For="@(() => claim.Description)" />
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" disabled="@(!isFormValid)">
+                        @(isEditMode ? "Update Claim" : "Save Claim")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@if (showCancelDialog)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Cancel</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDialogNo"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel? Any unsaved changes will be lost.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDialogNo">No</button>
+                    <button type="button" class="btn btn-danger" @onclick="CancelDialogYes">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int? ClaimId { get; set; }
+
+    private Claim claim = new();
+    private bool isEditMode => ClaimId.HasValue;
+    private bool isLoading = false;
+    private bool showCancelDialog = false;
+    private bool showDateValidationError = false;
+    private bool isFormValid => ValidateForm();
+    private string pageTitle => isEditMode ? "Edit Claim" : "Add New Claim";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Only load data when in interactive mode to avoid double-loading
+        // during server static -> server interactive -> wasm interactive transitions
+        if (!RendererInfo.IsInteractive)
+        {
+            isLoading = true;
+            return;
+        }
+
+        if (isEditMode)
+        {
+            isLoading = true;
+            var existingClaim = await ClaimsData.GetClaimAsync(ClaimId!.Value);
+            if (existingClaim != null)
+            {
+                claim = existingClaim;
+            }
+            else
+            {
+                // Claim not found, redirect to claims list
+                Navigation.NavigateTo("/claims");
+            }
+            isLoading = false;
+        }
+        else
+        {
+            // Set default values for new claim
+            claim.DateFiled = DateTime.Today;
+            claim.Status = "Pending";
+        }
+    }
+
+    private bool ValidateForm()
+    {
+        // Check required fields
+        if (string.IsNullOrWhiteSpace(claim.ClaimNumber) ||
+            string.IsNullOrWhiteSpace(claim.PolicyHolderName) ||
+            string.IsNullOrWhiteSpace(claim.Status) ||
+            claim.ClaimAmount <= 0)
+        {
+            return false;
+        }
+
+        // Check date validation
+        if (claim.DateOfIncident >= DateTime.Today)
+        {
+            showDateValidationError = true;
+            return false;
+        }
+        
+        showDateValidationError = false;
+        return true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // Additional validation for DateOfIncident
+        if (claim.DateOfIncident >= DateTime.Today)
+        {
+            showDateValidationError = true;
+            return;
+        }
+
+        showDateValidationError = false;
+
+        try
+        {
+            if (isEditMode)
+            {
+                await ClaimsData.UpdateClaimAsync(claim);
+            }
+            else
+            {
+                await ClaimsData.AddClaimAsync(claim);
+            }
+
+            // Navigate back to claims list
+            Navigation.NavigateTo("/claims");
+        }
+        catch (Exception ex)
+        {
+            // In a production app, you'd want to display this error to the user
+            Console.Error.WriteLine($"Error saving claim: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        showCancelDialog = true;
+    }
+
+    private void CancelDialogNo()
+    {
+        showCancelDialog = false;
+    }
+
+    private void CancelDialogYes()
+    {
+        showCancelDialog = false;
+        Navigation.NavigateTo("/claims");
+    }
+}

@@ -1,4 +1,3 @@
-using ClaimTrackerBlazor.Client.Pages;
 using ClaimTrackerBlazor.Components;
 using ClaimTrackerBlazor.Contracts;
 using ClaimTrackerBlazor.DataAccess;
