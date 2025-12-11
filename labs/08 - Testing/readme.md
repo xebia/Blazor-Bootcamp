@@ -18,7 +18,7 @@ dotnet new install bunit.template
 5. Enter the project name: `BlazorHolTestApp`
 6. Click Next
 7. Use the following options:
-   - Framework: .NET 8.0
+   - Framework: .NET 10
    - Authentication Type: None
    - Configure for HTTPS: Checked
    - Interactive render mode: Server
@@ -40,7 +40,7 @@ dotnet new install bunit.template
 2. Select the bUnit Test Project template
 3. Name the project `BlazorTests`
 4. Select mstest as the test framework
-5. Target .NET 8.0
+5. Target .NET 10
 6. Select the `BlazorTests` project
 7. In the `BlazorTests` project, add a Project Reference to the `BlazorHolTestApp` project
 8. In the `BlazorTests` project, add a using statement to the `_Imports.razor` file:

@@ -25,7 +25,7 @@ A fully functional WPF desktop application for managing insurance claims with:
 ## ?? Getting Started
 
 ### Prerequisites
-- Visual Studio 2022 or later
+- Visual Studio 2026 or later
 - .NET Framework 4.8.1 SDK
 - SQL Server LocalDB (included with Visual Studio)
 

@@ -9,7 +9,7 @@
 5. Enter the project name: `BlazorHolJsInterop`
 6. Click Next
 7. Use the following options:
-   - Framework: .NET 8.0
+   - Framework: .NET 10
    - Authentication Type: None
    - Configure for HTTPS: Checked
    - Interactive render mode: Server
