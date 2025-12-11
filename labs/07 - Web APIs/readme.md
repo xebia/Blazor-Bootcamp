@@ -143,8 +143,69 @@ If you watch closely, you'll see that the data is loaded twice! This is because 
 
 ## Fixing the Double Load of Data
 
+There are two approaches to solve this problem. Here's the call count breakdown:
+
+| Approach | Prerender | Interactive | Total |
+|----------|-----------|-------------|-------|
+| No fix (original problem) | 1 call | 1 call | **2 calls** |
+| **RendererInfo.IsInteractive** | 0 calls | 1 call | **1 call** |
+| **PersistentComponentState** | 1 call | 0 calls (reads from HTML) | **1 call** |
+
+Both fixes result in 1 call - it's just a question of **when** that call happens.
+
+| Approach | How it works | User Experience |
+|----------|--------------|-----------------|
+| **RendererInfo.IsInteractive** | Skips fetch during prerender, only fetches when interactive | User sees "Loading..." briefly, then data appears |
+| **PersistentComponentState** | Fetches during prerender, serializes data to HTML, reuses when interactive | User sees **real data** immediately |
+
+### 💡 When to Use Each Approach
+
+For a **WebAssembly** page, `RendererInfo.IsInteractive` is the **better** approach because:
+
+1. **Simpler code** - no subscription, no IDisposable, no Persist callback
+2. **The spinner is good UX** - WebAssembly takes time to download/boot anyway, so users expect a brief load
+3. **More realistic pattern** - most real apps use loading states
+4. **Data freshness** - data is fetched when the user can actually interact with it
+
+`PersistentComponentState` is better for:
+- **SEO scenarios** where crawlers need data in the initial HTML
+- **InteractiveServer** mode where there's no WebAssembly download delay
+- Complex multi-component state coordination
+
+### Approach 1: RendererInfo.IsInteractive (Recommended)
+
+This approach is the simplest and most common pattern for WebAssembly pages.
+
 1. Open the `ClientWeather.razor` file in the client project
-2. Add the following code to the file to prevent the data from being loaded twice
+2. Update the `OnInitializedAsync` method to check if the component is interactive:
+
+```csharp
+protected override async Task OnInitializedAsync()
+{
+    // Only fetch data when running interactively to avoid duplicate calls
+    // during the static prerender phase. The prerender will show "Loading..."
+    // and data loads once WebAssembly is ready.
+    if (RendererInfo.IsInteractive)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "MyBearerTokenValue");
+        forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/weatherforecast");
+    }
+}
+```
+
+> ⚠️ Change the port from `7285` to the port of _your_ AppServer project
+
+3. Run the application
+4. Navigate to the `Client Weather` page
+5. You will see "Loading..." briefly while WebAssembly boots, then the data appears (fetched only once!)
+
+### Approach 2: PersistentComponentState (Advanced Alternative)
+
+Use this approach when you need data visible in the initial HTML (for SEO or instant display).
+
+1. Open the `ClientWeather.razor` file in the client project
+2. Add the `IDisposable` interface and inject `PersistentComponentState`:
 
 ```html
 @page "/clientweather"
@@ -156,58 +217,60 @@ If you watch closely, you'll see that the data is loaded twice! This is because 
 @inject PersistentComponentState ApplicationState
 ```
 
-3. Add a field in the `@code` block for the `PersistingComponentStateSubscription` subscription
+3. Add a field for the subscription in the `@code` block:
 
 ```csharp
-    private PersistingComponentStateSubscription _subscription;
+private PersistingComponentStateSubscription _subscription;
 ```
 
-4. Add the following code to the `OnInitializedAsync` method
+4. Update the `OnInitializedAsync` method to register for persisting and check for existing state:
 
 ```csharp
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
+{
+    // Register a callback to persist state when the prerender completes.
+    // This serializes the data into the HTML response.
+    _subscription = ApplicationState.RegisterOnPersisting(Persist);
+
+    // Try to retrieve data that was persisted during prerender.
+    // If found, we reuse it instead of making another HTTP call.
+    var foundInState = ApplicationState
+        .TryTakeFromJson<WeatherForecast[]>("forecasts", out forecasts);
+
+    if (!foundInState)
     {
-        _subscription = ApplicationState.RegisterOnPersisting(Persist);
-
-        var foundInState = ApplicationState
-            .TryTakeFromJson<WeatherForecast[]>("forecasts", out forecasts);
-
-        if (!foundInState)
-        {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "MyBearerTokenValue");
-            forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/weatherforecast");
-        }
+        // No persisted data found - fetch from the API
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "MyBearerTokenValue");
+        forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/weatherforecast");
     }
+}
 ```
 
-> ⚠️ Change the port from `7285` to the port of _your_ AppServer project
-
-5. Add the following `Persist` method to the `@code` block
+5. Add the `Persist` method to serialize state during prerender:
 
 ```csharp
-    private Task Persist()
-    {
-        ApplicationState.PersistAsJson("forecasts", forecasts);
-        return Task.CompletedTask;
-    }
+private Task Persist()
+{
+    ApplicationState.PersistAsJson("forecasts", forecasts);
+    return Task.CompletedTask;
+}
 ```
 
-6. Add the following `Dispose` method to the `@code` block
+6. Add the `Dispose` method to clean up the subscription:
 
 ```csharp
-    public void Dispose()
-    {
-        _subscription.Dispose();
-    }
+public void Dispose()
+{
+    _subscription.Dispose();
+}
 ```
 
 7. Run the application
 8. Navigate to the `Client Weather` page
-9. You will see the weather forecast data loaded from the Web API
-10. The data will only be loaded once
+9. You will see the weather forecast data loaded only once, and the data appears immediately!
 
-Another alternative is to detect the render mode and only load the data one time, usually once the page has rendered in interactive mode.
+> **Note:** Hot Reload in Visual Studio can be used to see changes without restarting. Only restart if cached or stale code persists.
 
 ## Securing the API
 

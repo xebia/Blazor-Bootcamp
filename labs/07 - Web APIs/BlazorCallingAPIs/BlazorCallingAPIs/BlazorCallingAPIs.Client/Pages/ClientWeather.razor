@@ -1,22 +1,32 @@
 ﻿@page "/clientweather"
 @using System.Text.Json
 @using System.Net.Http.Headers
-@using Marimer.Blazor.RenderMode
 @rendermode InteractiveWebAssembly
-@implements IDisposable
 
-@inject PersistentComponentState ApplicationState
-@inject RenderModeProvider RenderModeProvider
+@* 
+    Two approaches exist to prevent double data loading during prerender → interactive:
+    
+    1. RendererInfo.IsInteractive (THIS IMPLEMENTATION - Recommended for WebAssembly):
+       Skips fetch during prerender, only fetches when interactive.
+       Simpler code, shows "Loading..." briefly, then data appears.
+    
+    2. PersistentComponentState (Advanced - for SEO/InteractiveServer):
+       Fetches during prerender, persists to HTML, reuses when interactive.
+       More complex but shows real data immediately.
+    
+    Both result in 1 API call - it's just a question of WHEN it happens.
+*@
 
 <PageTitle>Client Weather</PageTitle>
 
 <h3>Client Weather</h3>
 
-<div class="text-info">@RenderModeProvider.GetRenderMode(this)</div>
+@* Display render mode for debugging *@
+<div class="text-info">Render Mode: @RendererInfo.Name, Interactive: @RendererInfo.IsInteractive</div>
 
 <p>This component demonstrates showing data.</p>
 
-@if (forecasts == null || renderMode.IsServer())
+@if (forecasts == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -47,37 +57,18 @@ else
 
 @code {
     private WeatherForecast[]? forecasts;
-    private PersistingComponentStateSubscription _subscription;
-    private Marimer.Blazor.RenderMode.RenderMode renderMode;
 
     protected override async Task OnInitializedAsync()
     {
-        renderMode = RenderModeProvider.GetRenderMode(this);
-        if (renderMode.IsInteractive())
+        // Only fetch data when running interactively to avoid duplicate calls
+        // during the static prerender phase. The prerender will show "Loading..."
+        // and data loads once WebAssembly is ready.
+        if (RendererInfo.IsInteractive)
         {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "MyBearerTokenValue");
             forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/weatherforecast");
         }
-
-
-        // _subscription = ApplicationState.RegisterOnPersisting(Persist);
-
-        // var foundInState = ApplicationState
-        //     .TryTakeFromJson<WeatherForecast[]>("forecasts", out forecasts);
-
-        // if (!foundInState)
-        // {
-        //     var httpClient = new HttpClient();
-        //     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "MyBearerTokenValue");
-        //     forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/weatherforecast");
-        // }
-    }
-
-    private Task Persist()
-    {
-        ApplicationState.PersistAsJson("forecasts", forecasts);
-        return Task.CompletedTask;
     }
 
     private class WeatherForecast
@@ -86,10 +77,5 @@ else
         public int TemperatureC { get; set; }
         public string? Summary { get; set; }
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
-
-    public void Dispose()
-    {
-        _subscription.Dispose();
     }
 }

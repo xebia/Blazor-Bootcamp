@@ -105,20 +105,26 @@ dotnet add package Microsoft.AspNetCore.Components.QuickGrid
 3. Replace the table in the `Home.razor` file with the following code:
 
 ```html
+@* QuickGrid provides high-performance data display with built-in sorting, 
+   virtualization support, and accessibility features *@
 <div class="grid">
-    <QuickGrid Items="@Data.Database.People.AsQueryable()">
-        <PropertyColumn Property="@(_ => _.Id)" />
-        <PropertyColumn Property="@(_ => _.FirstName)" Sortable="true" />
-        <PropertyColumn Property="@(_ => _.LastName)" Sortable="true" />
-        <PropertyColumn Property="@(_ => _.Age)" Sortable="true" />
-        <TemplateColumn>
-            <a href="EditPerson/@context.Id">Edit</a>
+    <QuickGrid Items="@Data.Database.People.AsQueryable()" Class="table table-striped">
+        <PropertyColumn Property="@(_ => _.Id)" Title="ID" />
+        <PropertyColumn Property="@(_ => _.FirstName)" Sortable="true" Title="First Name" />
+        <PropertyColumn Property="@(_ => _.LastName)" Sortable="true" Title="Last Name" />
+        <PropertyColumn Property="@(_ => _.Age)" Sortable="true" Title="Age" />
+        <TemplateColumn Title="Actions">
+            <a href="EditPerson/@context.Id" class="btn btn-sm btn-primary me-1">Edit</a>
         </TemplateColumn>
     </QuickGrid>
 </div>
 ```
 
+The `Class` attribute applies Bootstrap styling, and `Title` provides accessible column headers.
+
 4. Press `Ctrl+F5` to run the app.
+
+> **Note:** Hot Reload in Visual Studio can be used to see changes without restarting. Only restart if cached or stale code persists.
 
 ## Adding an Edit Page
 
