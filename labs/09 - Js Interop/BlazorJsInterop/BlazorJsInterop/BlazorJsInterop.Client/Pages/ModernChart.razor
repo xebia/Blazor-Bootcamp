@@ -1,0 +1,51 @@
+@* Demonstrates modern source-generated JavaScript interop for WebAssembly *@
+@page "/modernchart"
+@rendermode InteractiveWebAssembly
+@using System.Runtime.InteropServices.JavaScript
+
+<PageTitle>Modern Chart</PageTitle>
+
+<h1>Modern JavaScript Interop</h1>
+
+<p>This page demonstrates source-generated JS interop using <code>[JSImport]</code>.</p>
+
+@* The canvas element where Chart.js will render *@
+<canvas id="modernChart" style="max-width: 600px; max-height: 400px;"></canvas>
+
+<div class="mt-3">
+    <button class="btn btn-primary" @onclick="CreateChartClicked">Create Chart</button>
+    <button class="btn btn-secondary" @onclick="ShowAlertClicked">Show Alert</button>
+</div>
+
+@code {
+    // Track if the JS module has been loaded
+    private bool moduleLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Import the JavaScript module for source-generated interop
+            // This must be done before calling any [JSImport] methods from that module
+            await JSHost.ImportAsync("ChartModule", "../ChartModule.js");
+            moduleLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateChartClicked()
+    {
+        if (moduleLoaded)
+        {
+            // Call the source-generated interop method
+            // No async/await needed - the call is synchronous and efficient
+            ChartInterop.CreateChart("modernChart");
+        }
+    }
+
+    private void ShowAlertClicked()
+    {
+        // Demonstrate calling a global JavaScript function
+        ChartInterop.ShowAlert("Hello from source-generated interop!");
+    }
+}

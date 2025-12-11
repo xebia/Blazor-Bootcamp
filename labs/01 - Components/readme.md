@@ -53,6 +53,8 @@ Welcome to the Blazor Hands On Lab App.
 4. Press F5 to run the application
 5. Notice the new content in the home page
 
+> **Note:** Hot Reload in Visual Studio can be used to see changes without restarting the application. If cached or stale code persists, restart the application.
+
 ## Add a new page
 
 1. Right-click on the `Components/Pages` folder

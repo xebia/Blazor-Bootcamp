@@ -112,8 +112,9 @@ This code injects the `IJSRuntime` service into the component so we can call Jav
 7. Run the application
 8. You should see a bar chart displayed on the home page
 
+> **Note:** Hot Reload in Visual Studio can be used to see changes without restarting. Only restart if cached or stale code persists.
+
 ## References
 
 - [Chart.js Documentation](https://www.chartjs.org/docs/latest/)
-- [JavaScript Interop in Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/call-javascript-from-dotnet?view=aspnetcore-6.0)
-- [Using Chart.js with Blazor](https://puresourcecode.com/dotnet/blazor/using-chart-js-with-blazor/#:~:text=First%20step%20is%20to%20add%20the%20library%20in,the%20application%20reads%20the%20script%20from%20the%20CDN)
+- [JavaScript Interop in Blazor](https://learn.microsoft.com/aspnet/core/blazor/javascript-interoperability/)

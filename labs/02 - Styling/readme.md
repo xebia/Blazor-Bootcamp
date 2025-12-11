@@ -48,6 +48,8 @@
 6. The button should now have the styles defined in the `app.css` file
 7. Close the browser
 
+> **Note:** Hot Reload in Visual Studio can be used to see CSS changes without restarting. Clear your browser cache or use a private window if styles don't update.
+
 ## Setting Per-Component CSS
 
 1. Open the `Counter.razor` file in the `Pages` folder
