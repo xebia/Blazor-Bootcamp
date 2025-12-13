@@ -1,8 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorHolDataAccess.Data;
 
-public class Database(SqliteConnection Connection)
+public class Database([FromKeyedServices("blazordb")] SqliteConnection Connection)
 {
     public async Task InitializeDatabaseAsync()
     {

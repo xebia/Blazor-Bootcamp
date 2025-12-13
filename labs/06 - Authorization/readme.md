@@ -129,16 +129,22 @@ Add the following property to the `Login` component.
     private string ReturnUrl { get; set; } = "/";
 ```
 
+Add the `Microsoft.AspNetCore.WebUtilities` namespace at the top of the file.
+
+```csharp
+@using Microsoft.AspNetCore.WebUtilities
+```
+
 Add an `OnInitialized` method to the `Login` component.
 
 ```csharp
     protected override void OnInitialized()
     {
-        var query = new Uri(NavigationManager.Uri).Query;
-        if (!string.IsNullOrEmpty(query))
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        if (queryParams.TryGetValue("ret", out var ret))
         {
-            var queryDictionary = System.Web.HttpUtility.ParseQueryString(query);
-            ReturnUrl = queryDictionary["ret"] ?? "/";
+            ReturnUrl = ret.ToString();
         }
     }
 ```

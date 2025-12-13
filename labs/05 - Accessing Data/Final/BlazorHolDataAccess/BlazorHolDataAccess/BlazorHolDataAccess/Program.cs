@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddTransient<SqliteConnection>(sp =>
+builder.Services.AddKeyedTransient<SqliteConnection>("blazordb", (sp, key) =>
 {
     var connection = new SqliteConnection("Data Source=BlazorHolDataAccess.db");
     connection.Open();
