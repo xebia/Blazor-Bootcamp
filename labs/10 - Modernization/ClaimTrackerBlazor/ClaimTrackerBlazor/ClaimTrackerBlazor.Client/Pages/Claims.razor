@@ -1,0 +1,55 @@
+@page "/claims"
+@rendermode InteractiveAuto
+@inject IClaimsData ClaimsData
+@inject NavigationManager Navigation
+
+<PageTitle>Claims Management</PageTitle>
+
+@* 
+    TODO: Implement the Claims List page
+    
+    This page should display a list of all claims in a table format.
+    
+    Requirements:
+    1. Show a page header with "Claims Management" title and an "Add New Claim" button
+    2. Display a loading spinner while data is being fetched
+    3. Show a message when no claims exist
+    4. Display claims in a table with columns: Claim Number, Policy Holder, Date Filed, Amount, Status, Actions
+    5. Each row should have Edit and Delete buttons
+    6. Implement a delete confirmation dialog
+    
+    Refer to the WPF ClaimsListPage.xaml for the original implementation.
+    
+    Hints:
+    - Use @if/@else for conditional rendering
+    - Use @foreach to iterate over claims
+    - Use @onclick for button handlers
+    - Use NavigationManager to navigate to add/edit pages
+*@
+
+<div class="content-area">
+    <div class="alert alert-info m-4">
+        <h4>🚧 Not Yet Implemented</h4>
+        <p>This page needs to be implemented as part of the lab exercise.</p>
+        <p>See the TODO comments in the source code for requirements.</p>
+    </div>
+</div>
+
+@code {
+    // TODO: Add the following fields:
+    // - private IEnumerable<Claim>? claims;
+    // - private bool showDeleteDialog = false;
+    // - private Claim? claimToDelete = null;
+
+    // TODO: Implement OnInitializedAsync to load claims
+    // Hint: Check RendererInfo.IsInteractive before loading data
+
+    // TODO: Implement these methods:
+    // - LoadClaims() - fetches claims from ClaimsData service
+    // - AddNewClaim() - navigates to /claims/add
+    // - EditClaim(int claimId) - navigates to /claims/edit/{claimId}
+    // - ShowDeleteConfirmation(Claim claim) - shows delete dialog
+    // - CancelDelete() - hides delete dialog
+    // - ConfirmDelete() - deletes claim and refreshes list
+    // - GetStatusBadgeClass(string status) - returns Bootstrap badge class based on status
+}

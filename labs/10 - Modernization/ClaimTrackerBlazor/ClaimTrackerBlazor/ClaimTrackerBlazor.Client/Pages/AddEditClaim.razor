@@ -1,0 +1,87 @@
+@page "/claims/add"
+@page "/claims/edit/{ClaimId:int}"
+@rendermode InteractiveAuto
+@inject IClaimsData ClaimsData
+@inject NavigationManager Navigation
+
+<PageTitle>@pageTitle</PageTitle>
+
+@* 
+    TODO: Implement the Add/Edit Claim page
+    
+    This page should provide a form for creating new claims or editing existing ones.
+    
+    Requirements:
+    1. Show a page header with dynamic title ("Add New Claim" or "Edit Claim")
+    2. Display a loading spinner when loading an existing claim
+    3. Create a form with the following fields:
+       - Claim Number (required, max 50 chars)
+       - Policy Holder Name (required, max 100 chars)
+       - Date of Incident (required, must be in the past)
+       - Date Filed (required)
+       - Claim Amount (required, must be > 0)
+       - Status (required, dropdown: Pending, Processing, Approved, Denied)
+       - Description (optional, max 500 chars)
+    4. Implement form validation using EditForm and DataAnnotationsValidator
+    5. Add Cancel and Save buttons
+    6. Show a cancel confirmation dialog when user has unsaved changes
+    
+    Refer to the WPF AddEditClaimWindow.xaml for the original implementation.
+    
+    Hints:
+    - Use EditForm with Model and OnValidSubmit
+    - Use InputText, InputDate, InputNumber, InputSelect, InputTextArea
+    - Use ValidationMessage for field-level errors
+    - The ClaimId parameter determines if this is edit mode
+*@
+
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">@pageTitle</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-area">
+    <div class="alert alert-info m-4">
+        <h4>🚧 Not Yet Implemented</h4>
+        <p>This page needs to be implemented as part of the lab exercise.</p>
+        <p>See the TODO comments in the source code for requirements.</p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? ClaimId { get; set; }
+
+    // TODO: Add the following fields:
+    // - private Claim claim = new();
+    // - private bool isLoading = false;
+    // - private bool showCancelDialog = false;
+    // - private bool showDateValidationError = false;
+
+    private bool isEditMode => ClaimId.HasValue;
+    private string pageTitle => isEditMode ? "Edit Claim" : "Add New Claim";
+
+    // TODO: Implement OnInitializedAsync
+    // - Check RendererInfo.IsInteractive before loading data
+    // - If edit mode, load the existing claim using ClaimsData.GetClaimAsync
+    // - If add mode, set default values (DateFiled = today, Status = "Pending")
+
+    // TODO: Implement ValidateForm() - returns bool
+    // - Check all required fields are filled
+    // - Check DateOfIncident is in the past
+    // - Check ClaimAmount > 0
+
+    // TODO: Implement HandleValidSubmit()
+    // - Validate DateOfIncident
+    // - Call AddClaimAsync or UpdateClaimAsync based on mode
+    // - Navigate back to /claims
+
+    // TODO: Implement Cancel(), CancelDialogNo(), CancelDialogYes()
+    // - Show/hide cancel confirmation dialog
+    // - Navigate back to /claims when confirmed
+}
