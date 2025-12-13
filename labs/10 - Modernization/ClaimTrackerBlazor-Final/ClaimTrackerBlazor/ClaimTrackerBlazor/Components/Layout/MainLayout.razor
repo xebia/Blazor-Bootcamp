@@ -1,0 +1,24 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <aside class="sidebar">
+        <NavMenu />
+    </aside>
+
+    <main class="main-panel">
+        <div class="top-row">
+            <div class="top-row-title">Claim Tracker</div>
+            <a href="https://github.com/xebia/Blazor-Bootcamp" target="_blank">About</a>
+        </div>
+
+        <article class="content content-surface">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

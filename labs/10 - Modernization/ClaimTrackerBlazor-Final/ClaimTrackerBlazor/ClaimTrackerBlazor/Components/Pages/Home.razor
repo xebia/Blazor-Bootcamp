@@ -1,0 +1,71 @@
+﻿@page "/"
+
+<PageTitle>Claim Tracker</PageTitle>
+
+<div class="welcome-section">
+    <h1><span class="welcome-text">Welcome to</span> <span class="brand-text">Claim Tracker</span></h1>
+    <p class="lead">Insurance Claims Management System</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-list-check text-primary"></i> Manage Claims
+                    </h5>
+                    <p class="card-text">View, add, edit, and delete insurance claims efficiently.</p>
+                    <a href="/claims" class="btn btn-primary">View All Claims</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-info-circle text-info"></i> About
+                    </h5>
+                    <p class="card-text">This application helps you track and manage insurance claims from submission to resolution.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-section {
+        padding: 2rem;
+    }
+    
+    .welcome-section h1 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-section h1 .welcome-text {
+        color: #3f5b6a;
+    }
+    
+    .welcome-section h1 .brand-text {
+        color: #842231;
+    }
+    
+    .welcome-section .lead {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .card-title i {
+        font-size: 1.2rem;
+    }
+</style>
