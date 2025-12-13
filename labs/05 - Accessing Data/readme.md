@@ -1,9 +1,11 @@
 # Accessing Databases from Blazor Server
 
+**Framework: .NET 10**
+
 ## Opening the Solution
 
 1. Open Visual Studio
-2. Open the `labs/11/BlazorHolDataAccess.sln` solution
+2. Open the `labs/05 - Accessing Data/BlazorHolDataAccess/BlazorHolDataAccess.sln` solution
 
 This is a Blazor Web App solution that you will finish in this lab.
 
@@ -12,10 +14,10 @@ This is a Blazor Web App solution that you will finish in this lab.
 Sqlite is perhaps the easiest way to get started with using a database in .NET. It is a file-based database that is easy to set up and use. It is not as powerful as SQL Server, but it is a good choice for small applications or for learning purposes.
 
 1. Add the `Microsoft.Data.Sqlite` package to your server project.
-2. Register a database connection service in the `Program.cs` file:
+2. Register a database connection service in the `Program.cs` file using keyed dependency injection:
 
 ```csharp
-builder.Services.AddTransient<SqliteConnection>(sp =>
+builder.Services.AddKeyedTransient<SqliteConnection>("blazordb", (sp, key) =>
 {
     var connection = new SqliteConnection("Data Source=BlazorHolData.db");
     connection.Open();
@@ -23,15 +25,18 @@ builder.Services.AddTransient<SqliteConnection>(sp =>
 });
 ```
 
+> ℹ️ Keyed dependency injection is a .NET 8+ feature that allows registering multiple implementations of the same service with different keys. This is useful when you need multiple database connections or want to clearly identify which service is being injected.
+
 3. There is already a `Data` folder to your server project.
 4. Add a `Database` class to the `Data` folder.
 
 ```csharp
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorHolDataAccess.Data
 {
-    public class Database(SqliteConnection Connection)
+    public class Database([FromKeyedServices("blazordb")] SqliteConnection Connection)
     {
         public async Task InitializeDatabaseAsync()
         {
@@ -128,10 +133,11 @@ This type is also in the client project so it is available to the server and cli
 
 ```csharp
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorHolDataAccess.Data;
 
-public class PersonDal(SqliteConnection connection) : IPersonDal
+public class PersonDal([FromKeyedServices("blazordb")] SqliteConnection connection) : IPersonDal
 {
     public Task DeletePersonAsync(int id)
     {

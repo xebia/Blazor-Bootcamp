@@ -1,8 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorHolDataAccess.Data;
 
-public class PersonDal(SqliteConnection connection) : IPersonDal
+public class PersonDal([FromKeyedServices("blazordb")] SqliteConnection connection) : IPersonDal
 {
     public Task DeletePersonAsync(int id)
     {
