@@ -16,7 +16,7 @@ namespace BlazorTests
             var cut = RenderComponent<Counter>();
 
             // Assert that content of the paragraph shows counter at zero
-            cut.Find("p").MarkupMatches("<p>Current count: 0</p>");
+            cut.Find("p").MarkupMatches("<p role=\"status\">Current count: 0</p>");
         }
 
         [TestMethod]
@@ -29,7 +29,7 @@ namespace BlazorTests
             cut.Find("button").Click();
 
             // Assert that the counter was incremented
-            cut.Find("p").MarkupMatches("<p>Current count: 1</p>");
+            cut.Find("p").MarkupMatches("<p role=\"status\">Current count: 1</p>");
         }
     }
 }
