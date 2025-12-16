@@ -258,11 +258,10 @@ Now this page can be accessed by navigating to `/editperson` or `/editperson/0`.
         }
         else
         {
-            if (Data.Database.People.Count() == 0)
-                newId = 1;
-            else
-                newId = Data.Database.People.Max(p => p.Id) + 1;
-            Person.Id = newId;
+            // Note ternary operator for cleaner, more concise code
+            Person.Id = Data.Database.People.Count() == 0 
+                ? 1 
+                : Data.Database.People.Max(p => p.Id) + 1;
             Data.Database.People.Add(Person);
         }
         NavigationManager.NavigateTo("/");
@@ -354,67 +353,68 @@ else
 @using System.Linq.Expressions
 @using System.Reflection
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
 @inherits ComponentBase
+
+@*
+    EditBase.razor - A base component for creating reusable form input controls.
+    
+    This component demonstrates modern .NET 10 / C# 14 patterns:
+    - FieldIdentifier for expression parsing (Blazor's built-in approach)
+    - ArgumentNullException.ThrowIfNull for cleaner guard clauses
+    - Null-coalescing operators for concise null handling
+    
+    Inherit from this component to create custom input controls that automatically
+    extract labels from [Display] attributes and integrate with Blazor's EditForm.
+*@
 
 @code {
     /// <summary>
-    /// Gets or sets the current edit context
+    /// The EditContext from the parent EditForm component.
+    /// Cascading parameters automatically flow down from ancestor components,
+    /// allowing child components to access form state without explicit parameter passing.
     /// </summary>
     [CascadingParameter]
     protected EditContext? CurrentEditContext { get; set; }
 
+    /// <summary>
+    /// Expression pointing to the model property this input is bound to.
+    /// Usage: For="() => Model.PropertyName"
+    /// 
+    /// Using Expression<Func<object>> instead of just Func<object> preserves
+    /// the expression tree, allowing us to inspect the property metadata at runtime.
+    /// This is the same pattern used by Blazor's built-in ValidationMessage component.
+    /// </summary>
     [Parameter]
     public Expression<Func<object>>? For { get; set; }
 
+    /// <summary>
+    /// The display label for the input, extracted from [Display(Name = "...")] 
+    /// attribute or defaulting to the property name.
+    /// </summary>
     protected string? Label { get; set; }
-    protected System.Reflection.PropertyInfo? Property;
+
+    /// <summary>
+    /// PropertyInfo for the bound property, used by derived components
+    /// to get/set values via reflection.
+    /// </summary>
+    protected PropertyInfo? Property { get; private set; }
 
     protected override void OnParametersSet()
     {
-        if (For is null)
-            throw new InvalidOperationException("For is required");
-        Property = GetMemberInfo(For) as System.Reflection.PropertyInfo;
-        if (Property == null)
-            throw new InvalidOperationException("For must be a property");
+        // Modern guard clause - concise and auto-includes parameter name in exception.
+        ArgumentNullException.ThrowIfNull(For);
+        
+        // Blazor's built-in expression parser handles property access, boxing, and nested properties.
+        var fieldIdentifier = FieldIdentifier.Create(For);
+        
+        // Extract PropertyInfo using the model instance and field name from FieldIdentifier.
+        Property = fieldIdentifier.Model.GetType().GetProperty(fieldIdentifier.FieldName)
+            ?? throw new InvalidOperationException(
+                $"Property '{fieldIdentifier.FieldName}' not found on type '{fieldIdentifier.Model.GetType().Name}'");
 
-        Label = Property.Name;
-        var displayName = Property.GetCustomAttributes<DisplayAttribute>().ToList().FirstOrDefault();
-        if (displayName != null)
-        {
-            Label = displayName.Name;
-        }
-    }
-
-    /// <summary>
-    /// Gets the member info from the expression
-    /// </summary>
-    /// <param name="member"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
-    private System.Reflection.MemberInfo GetMemberInfo(Expression member)
-    {
-        if (member == null) 
-            throw new ArgumentNullException(nameof(member));
-
-        if (member is not LambdaExpression lambda)
-            throw new ArgumentException("Not a lambda expression", nameof(member));
-
-        MemberExpression? memberExpr = null;
-
-        if (lambda.Body.NodeType == ExpressionType.Convert)
-        {
-            memberExpr = ((UnaryExpression)lambda.Body)?.Operand as MemberExpression;
-        }
-        else if (lambda.Body.NodeType == ExpressionType.MemberAccess)
-        {
-            memberExpr = lambda.Body as MemberExpression;
-        }
-
-        if (memberExpr == null) 
-            throw new ArgumentException("Not a member expression", nameof(member));
-
-        return memberExpr.Member;
+        // Use [Display] attribute name if present, otherwise fall back to property name.
+        Label = Property.GetCustomAttribute<DisplayAttribute>()?.Name ?? Property.Name;
     }
 }
 ```
@@ -483,7 +483,7 @@ This component provides a text input for editing a string property. It uses the 
 
 This component provides a number input for editing an integer property. It uses the `EditBase` component to get the property and label information.
 
-5. Update the `EditPerson` component to use the new components:
+5. Update the `EditPerson` component to use the new components (Note: add `@using BlazorHolData.Components.Shared` to ensure the new namespace is included):
 
 ```html
 @page "/editperson"

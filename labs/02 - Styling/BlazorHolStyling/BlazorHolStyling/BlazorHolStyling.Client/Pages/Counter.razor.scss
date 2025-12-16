@@ -1,0 +1,26 @@
+﻿/* SCSS Variables */
+$counter-heading-color: #4a4a4a;
+$counter-button-bg: #0066cc;
+$counter-button-hover-bg: #0052a3;
+$counter-status-color: #2d862d;
+
+h1 {
+    color: $counter-heading-color;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+button {
+    background-color: $counter-button-bg;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
+    &:hover {
+        background-color: $counter-button-hover-bg;
+    }
+}
+
+.counter-status {
+    color: $counter-status-color;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
