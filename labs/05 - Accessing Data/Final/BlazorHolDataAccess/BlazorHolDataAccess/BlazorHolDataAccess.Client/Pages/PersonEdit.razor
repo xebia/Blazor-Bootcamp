@@ -12,7 +12,7 @@
 
 <div class="alert-danger">@ErrorMessage</div>
 
-@if (Person == null)
+@if (!RendererInfo.IsInteractive || Person == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -39,6 +39,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (!RendererInfo.IsInteractive) return;
         try
         {
             if (Id > 0)

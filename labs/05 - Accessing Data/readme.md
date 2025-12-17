@@ -307,7 +307,7 @@ Because this page does not have a `renderMode` attribute, it will be rendered us
 
 <div class="alert-danger">@ErrorMessage</div>
 
-@if (Person == null)
+@if (!RendererInfo.IsInteractive || Person == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -334,6 +334,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (!RendererInfo.IsInteractive) return;
         try
         {
             if (Id > 0)
@@ -378,6 +379,8 @@ This component allows you to edit a person. It uses the `EditForm` component to 
 
 The `PersonEdit` component injects the `IPersonDal` service and uses it to get a person from the database. If the `Id` parameter is 0, a new person is created. If the `Id` parameter is greater than 0, the person with that ID is retrieved from the database.
 
+> ℹ️ **Important:** The `RendererInfo.IsInteractive` guard in `OnInitializedAsync` prevents data access during prerendering. This is critical because the `IPersonDal` service may not be available or may behave differently during static server-side rendering.
+
 The `PersonEdit` component has a `HandleValidSubmit` method that is called when the form is submitted. If the person is new, the `AddPersonAsync` method is called. If the person already exists, the `UpdatePersonAsync` method is called.
 
 The `PersonEdit` component has a `renderMode` attribute with the value `InteractiveServer`. This means that the component will be rendered using the server interactive render mode, so all the code runs on the server and the user has a highly interactive experience in the browser.
@@ -397,7 +400,7 @@ The `PersonEdit` component has a `renderMode` attribute with the value `Interact
 
 <h3>Remove Person</h3>
 
-@if (Person == null)
+@if (!RendererInfo.IsInteractive || Person == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -421,6 +424,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!RendererInfo.IsInteractive) return;
         if (Id > 0)
         {
             Person = await personDal.GetPersonAsync(Id);
@@ -446,6 +450,10 @@ else
 ```
 
 This component allows you to remove a person. It uses the `IPersonDal` service to get the person from the database and to remove the person.
+
+> ℹ️ **Important:** The `RendererInfo.IsInteractive` guard ensures that:
+> 1. The page shows "Loading..." during prerendering
+> 2. Data access only occurs once the component is interactive, preventing errors with services that aren't available during static rendering
 
 The `RemovePerson` component has a `renderMode` attribute with the value `InteractiveServer`. This means that the component will be rendered using the server interactive render mode, so all the code runs on the server and the user has a highly interactive experience in the browser.
 

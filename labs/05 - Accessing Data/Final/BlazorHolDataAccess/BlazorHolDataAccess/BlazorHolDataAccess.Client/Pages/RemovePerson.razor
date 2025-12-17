@@ -8,7 +8,7 @@
 
 <h3>Remove Person</h3>
 
-@if (Person == null)
+@if (!RendererInfo.IsInteractive || Person == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -32,6 +32,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!RendererInfo.IsInteractive) return;
         if (Id > 0)
         {
             Person = await personDal.GetPersonAsync(Id);
