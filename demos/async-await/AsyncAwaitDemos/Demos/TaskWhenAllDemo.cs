@@ -39,20 +39,21 @@ internal static class TaskWhenAllDemo
 			DumpTaskOutcomes(tasks);
 			throw;
 		}
+		catch (AggregateException agg)
+		{
+            ConsoleEx.Error($"Caught exception: {agg.GetType().Name}: {agg.Message}");
+            DumpTaskOutcomes(tasks);
+            AnsiConsole.MarkupLine("\n[aqua]AggregateException.InnerExceptions[/]");
+			foreach (var inner in agg.InnerExceptions)
+			{
+				AnsiConsole.MarkupLine($"- [red]{inner.GetType().Name}[/]: {inner.Message}");
+			}
+			throw;
+		}
 		catch (Exception ex)
 		{
 			ConsoleEx.Error($"Caught exception: {ex.GetType().Name}: {ex.Message}");
 			DumpTaskOutcomes(tasks);
-
-			if (ex is AggregateException agg)
-			{
-				AnsiConsole.MarkupLine("\n[aqua]AggregateException.InnerExceptions[/]");
-				foreach (var inner in agg.InnerExceptions)
-				{
-					AnsiConsole.MarkupLine($"- [red]{inner.GetType().Name}[/]: {inner.Message}");
-				}
-			}
-
 			throw;
 		}
 	}
