@@ -78,13 +78,16 @@
                 Message = "HttpContext is null";
                 return;
             }
-            AuthenticationProperties authProperties = new AuthenticationProperties();
+            AuthenticationProperties authProperties = new AuthenticationProperties
+            {
+                RedirectUri = ReturnUrl
+            };
             await httpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
                 authProperties);
 
-            NavigationManager.NavigateTo(ReturnUrl);
+            httpContext.Response.Redirect(ReturnUrl);
         }
         else
         {
