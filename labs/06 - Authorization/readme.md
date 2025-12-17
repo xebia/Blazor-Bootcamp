@@ -4,6 +4,59 @@
 
 1. Open the `BlazorHolAuthentication` app from lab 06.
 
+## Understanding the Authorization Infrastructure
+
+Before making any changes, let's examine the key files that enable authorization in a Blazor application.
+
+### Examining Routes.razor
+
+1. Open `Components/Routes.razor`
+2. Notice the `<CascadingAuthenticationState>` wrapper component:
+
+```razor
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>
+```
+
+**Key observations:**
+- `<CascadingAuthenticationState>` makes the current user's authentication state available to all descendant components via cascading parameters
+- `<AuthorizeRouteView>` replaces the standard `<RouteView>` and handles authorization checks for pages with `[Authorize]` attributes
+- When a user isn't authorized, `AuthorizeRouteView` can display an "access denied" or redirect to login
+
+### Examining Program.cs
+
+1. Open `Program.cs`
+2. Look for the authentication and authorization service registrations:
+
+```csharp
+builder.Services.AddSingleton<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+  .AddCookie();
+```
+
+**Key observations:**
+- `AddCascadingAuthenticationState()` registers the service that enables `<CascadingAuthenticationState>` to work
+- A custom `AuthenticationStateProvider` is registered to provide the current user's identity
+- Cookie authentication is configured for persisting login state
+
+3. Also notice the middleware pipeline:
+
+```csharp
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+These middleware components must be present for authorization to work.
+
 ## Using the Authorization Namespace
 
 1. Open the `_Imports.razor` file.
