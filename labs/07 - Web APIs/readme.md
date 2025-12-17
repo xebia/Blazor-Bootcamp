@@ -363,3 +363,158 @@ app.MapControllers().RequireAuthorization("BearerAuthn");
 ## References
 
 https://khalidabuhakmeh.com/customize-the-authorization-pipeline-in-aspnet-core
+
+## Adding a Minimal API Endpoint
+
+Now that you've built a traditional controller-based API, let's add a Minimal API endpoint to see the modern approach side-by-side. Minimal APIs are lightweight, expressive, and perfect for simple endpoints.
+
+### Creating the WeatherEndpoints Class
+
+Rather than putting all endpoint definitions directly in `Program.cs`, we'll use a separate file with extension methods for better organization.
+
+1. Right-click on the `AppServer` project
+2. Click on Add > Class
+3. Name the file: `WeatherEndpoints.cs`
+4. Click Add
+5. Replace the contents with the following code:
+
+```csharp
+namespace AppServer;
+
+public static class WeatherEndpoints
+{
+    private static readonly string[] summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    public static void MapWeatherEndpoints(this IEndpointRouteBuilder app)
+    {
+        // Create a route group for all weather-related endpoints
+        var weatherGroup = app.MapGroup("/api/weather")
+            .RequireAuthorization("BearerAuthn")
+            .WithTags("Weather");
+
+        // GET /api/weather
+        weatherGroup.MapGet("/", GetWeatherForecast)
+            .WithName("GetWeatherForecast")
+            .WithOpenApi();
+
+        // GET /api/weather/summary
+        weatherGroup.MapGet("/summary", GetSummaries)
+            .WithName("GetWeatherSummaries")
+            .WithOpenApi();
+    }
+
+    private static WeatherForecast[] GetWeatherForecast()
+    {
+        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = summaries[Random.Shared.Next(summaries.Length)]
+        })
+        .ToArray();
+    }
+
+    private static IResult GetSummaries()
+    {
+        return Results.Ok(summaries);
+    }
+}
+```
+
+This demonstrates several Minimal API best practices:
+- **Extension method pattern** - keeps `Program.cs` clean
+- **Route grouping** - organizes related endpoints with shared configuration
+- **Authorization** - applies the same `BearerAuthn` policy we used for controllers
+- **OpenAPI integration** - endpoints appear in Swagger documentation
+- **Separate handler methods** - keeps the mapping code readable
+
+### Registering the Endpoints
+
+1. Open the `Program.cs` file in the `AppServer` project
+2. Find the line `app.MapControllers().RequireAuthorization("BearerAuthn");`
+3. Add the following line immediately after it:
+
+```csharp
+app.MapWeatherEndpoints();
+```
+
+Your endpoint registration should now look like this:
+
+```csharp
+app.MapControllers().RequireAuthorization("BearerAuthn");
+app.MapWeatherEndpoints();
+```
+
+### Testing the Minimal API Endpoint
+
+1. Run the application
+2. Navigate to the Swagger UI for the `AppServer` project at `https://localhost:7285/swagger`
+
+> ⚠️ Change the port from `7285` to the port of _your_ AppServer project
+
+3. You should see both:
+   - The original `WeatherForecast` controller endpoint at `/weatherforecast`
+   - The new Minimal API endpoints at `/api/weather` and `/api/weather/summary`
+
+### Calling the Minimal API from Blazor
+
+Let's update the `ClientWeather.razor` page to call the new Minimal API endpoint instead of the controller.
+
+1. Open the `ClientWeather.razor` file in the client project
+2. Find the line with `GetFromJsonAsync<WeatherForecast[]>`
+3. Change the URL from `/weatherforecast` to `/api/weather`:
+
+```csharp
+forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7285/api/weather");
+```
+
+> ⚠️ Change the port from `7285` to the port of _your_ AppServer project
+
+4. Run the application
+5. Navigate to the `Client Weather` page
+6. You will see the weather forecast data loaded from the Minimal API endpoint
+
+### Comparing Controller vs Minimal API
+
+Now you have both approaches running side-by-side:
+
+| Approach | Route | File Location | Best For |
+|----------|-------|---------------|----------|
+| **Controller** | `/weatherforecast` | `WeatherForecastController.cs` | Complex CRUD operations, traditional RESTful APIs |
+| **Minimal API** | `/api/weather` | `WeatherEndpoints.cs` | Simple endpoints, microservices, modern projects |
+
+**Key Differences:**
+
+- **Controllers**: More structure, built-in model binding, attribute-based routing
+- **Minimal APIs**: Less ceremony, functional style, easier to test, better performance
+
+**When to use Minimal APIs:**
+- New projects targeting .NET 6+
+- Microservices or serverless functions
+- Simple CRUD operations
+- When you want less boilerplate code
+
+**When to use Controllers:**
+- Large existing codebases
+- Complex validation scenarios
+- When your team is more familiar with MVC patterns
+- When you need controller-level filters or conventions
+
+### Understanding API Security
+
+Let's verify that the security is working correctly:
+
+1. Make sure both projects are still running
+2. Try to navigate directly to `https://localhost:7285/api/weather/summary` in your browser (using your AppServer port)
+3. You should see a **401 Unauthorized** error
+
+This is **expected behavior**! The endpoint is protected by the `BearerAuthn` authorization policy we applied to the entire route group. Without the bearer token, the request is rejected.
+
+**Why this matters:**
+- Your API is properly secured - unauthorized users cannot access the data
+- The same security policy applies to both the controller endpoints and minimal API endpoints
+- In Swagger, you can test with the bearer token by clicking "Authorize" and entering `Bearer MyBearerTokenValue`
+- In a real application, you would use tools like Postman or REST Client extensions where you can properly configure authorization headers with valid JWT tokens
