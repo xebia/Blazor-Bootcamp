@@ -1,0 +1,108 @@
+@page "/horsepower-results"
+@rendermode InteractiveAuto
+
+<PageTitle>Horsepower Results</PageTitle>
+
+<h1>Muscle Car Horsepower Results</h1>
+
+<p>Estimated horsepower calculated from quarter mile performance data using the trap speed formula: HP = Weight × (MPH / 234)³</p>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+@if (showForm)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>@(isEditing ? "Edit Muscle Car" : "Add New Muscle Car")</h5>
+        </div>
+        <div class="card-body">
+            <EditForm Model="editingCar" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Make</label>
+                        <InputText @bind-Value="editingCar.Make" class="form-control" placeholder="e.g., Chevrolet" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Model</label>
+                        <InputText @bind-Value="editingCar.Model" class="form-control" placeholder="e.g., Chevelle SS 454" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <InputNumber @bind-Value="editingCar.Year" class="form-control" />
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Weight (lbs)</label>
+                        <InputNumber @bind-Value="editingCar.Weight" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">1/4 Mile Time (sec)</label>
+                        <InputNumber @bind-Value="editingCar.QuarterMileTime" class="form-control" step="0.01" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">1/4 Mile Speed (mph)</label>
+                        <InputNumber @bind-Value="editingCar.QuarterMileSpeed" class="form-control" step="0.1" />
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        @(isEditing ? "Update" : "Add") Car
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                        Cancel
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+else if (isLoading)
+{
+    <p><em>Loading muscle car data...</em></p>
+}
+else if (muscleCars == null || !muscleCars.Any())
+{
+    <div class="mb-3">
+        <button class="btn btn-success" @onclick="ShowAddForm">
+            + Add Entry
+        </button>
+    </div>
+    <p><em>No muscle car data available.</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-success" @onclick="ShowAddForm">
+            + Add Entry
+        </button>
+    </div>
+    
+    <QuickGrid Items="@muscleCars.AsQueryable()" Class="table table-striped">
+        <PropertyColumn Property="@(c => c.FullName)" Title="Car" Sortable="true" />
+        <PropertyColumn Property="@(c => c.Year)" Title="Year" Sortable="true" />
+        <PropertyColumn Property="@(c => c.Weight)" Title="Weight (lbs)" Sortable="true" Format="N0" />
+        <PropertyColumn Property="@(c => c.QuarterMileTime)" Title="1/4 Mile Time (sec)" Sortable="true" Format="F2" />
+        <PropertyColumn Property="@(c => c.QuarterMileSpeed)" Title="1/4 Mile Speed (mph)" Sortable="true" Format="F1" />
+        <PropertyColumn Property="@(c => c.EstimatedHorsepower)" Title="Est. HP" Sortable="true" Format="F0" />
+        <TemplateColumn Title="Actions">
+            <div class="d-flex gap-1 flex-nowrap">
+                <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowEditForm(context)">
+                    Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(context)">
+                    Delete
+                </button>
+            </div>
+        </TemplateColumn>
+    </QuickGrid>
+}
