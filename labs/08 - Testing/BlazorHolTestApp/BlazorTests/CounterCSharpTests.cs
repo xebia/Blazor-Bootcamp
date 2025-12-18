@@ -13,7 +13,7 @@ namespace BlazorTests
         public void CounterStartsAtZero()
         {
             // Arrange
-            var cut = RenderComponent<Counter>();
+            var cut = Render<Counter>();
 
             // Assert that content of the paragraph shows counter at zero
             cut.Find("p").MarkupMatches("<p role=\"status\">Current count: 0</p>");
@@ -23,7 +23,7 @@ namespace BlazorTests
         public void ClickingButtonIncrementsCounter()
         {
             // Arrange
-            var cut = RenderComponent<Counter>();
+            var cut = Render<Counter>();
 
             // Act - click button to increment counter
             cut.Find("button").Click();
