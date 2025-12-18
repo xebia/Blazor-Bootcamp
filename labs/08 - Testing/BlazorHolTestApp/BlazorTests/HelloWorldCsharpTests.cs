@@ -12,7 +12,7 @@ public class HelloWorldTests : BunitTestContext
     public void HelloWorldComponentRendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<HelloWorld>();
+        var cut = Render<HelloWorld>();
 
         // Assert
         cut.MarkupMatches("<h1>Hello world from Blazor</h1>");
