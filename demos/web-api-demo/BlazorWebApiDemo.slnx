@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/1. Blazor/">
+    <Project Path="BlazorWebApiDemo/BlazorWebApiDemo.Client/BlazorWebApiDemo.Client.csproj" />
+    <Project Path="BlazorWebApiDemo/BlazorWebApiDemo/BlazorWebApiDemo.csproj" />
+  </Folder>
+  <Folder Name="/2. API/">
+    <Project Path="AppServer/AppServer.csproj" />
+  </Folder>
+</Solution>
